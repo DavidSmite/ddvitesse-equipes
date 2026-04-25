@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1e4d8b">
+<title>DD Vitesse — Suivi Multi-Équipes</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f7;color:#1d1d1f;line-height:1.4}
+body{padding-bottom:80px}
+.app{max-width:680px;margin:0 auto;background:#fff;min-height:100vh}
+.header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:#fff;padding:16px 20px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.15)}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.logo{font-size:18px;font-weight:700;letter-spacing:1px}
+.logo-sub{font-size:11px;opacity:0.7;margin-top:2px}
+.tabs{display:flex;gap:8px;margin-top:4px}
+.tab{flex:1;padding:10px;background:rgba(255,255,255,0.1);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.tab.active.red{background:#8B1A1A;box-shadow:0 2px 8px rgba(139,26,26,0.5)}
+.tab.active.blue{background:#1e4d8b;box-shadow:0 2px 8px rgba(30,77,139,0.5)}
+.toolbar{display:flex;gap:6px;margin-top:10px;justify-content:center;flex-wrap:wrap}
+.tool-btn{padding:6px 10px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:6px;font-size:11px;cursor:pointer;transition:all 0.2s;font-weight:500}
+.tool-btn:active{transform:scale(0.95);background:rgba(255,255,255,0.3)}
+.tool-btn.primary{background:#4CAF50;border-color:#4CAF50}
+.tool-btn.danger{background:rgba(244,67,54,0.3);border-color:rgba(244,67,54,0.5)}
+.content{padding:20px 16px}
+.section-title-bar{background:#8B1A1A;color:#fff;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-weight:700;font-size:14px;letter-spacing:0.5px}
+.section-title-bar.blue{background:#1e4d8b}
+.fiche-header{background:#8B1A1A;color:#fff;padding:14px 18px;border-radius:10px;margin-bottom:20px}
+.fiche-header.blue{background:#1e4d8b}
+.fiche-header h2{font-size:16px;font-weight:700;letter-spacing:1px}
+.fiche-header p{font-size:12px;opacity:0.85;margin-top:4px}
+
+.team-selector{background:#fff;border:2px solid #e0e0e0;border-radius:10px;padding:12px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.team-selector-label{font-size:11px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.team-count{background:#8B1A1A;color:#fff;padding:2px 8px;border-radius:10px;font-size:10px}
+.team-selector.blue-mode .team-count{background:#1e4d8b}
+.team-row{display:flex;gap:8px;align-items:center}
+.team-dropdown{flex:1;padding:10px 12px;border:1px solid #d0d0d0;border-radius:8px;font-size:14px;font-weight:600;background:#f9f9f9;cursor:pointer}
+.team-btn{padding:10px 14px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:#8B1A1A;color:#fff;transition:all 0.2s}
+.team-btn.blue{background:#1e4d8b}
+.team-btn:active{transform:scale(0.95)}
+.team-btn.delete{background:#c0392b}
+.team-btn.add{background:#4CAF50}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.grid-1{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:16px}
+.field{display:flex;flex-direction:column}
+.field-label{font-size:11px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+.field input,.field select,.field textarea{padding:12px 14px;border:1px solid #d0d0d0;border-radius:10px;font-size:15px;background:#fafafa;transition:all 0.2s;font-family:inherit;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#8B1A1A;background:#fff;box-shadow:0 0 0 3px rgba(139,26,26,0.1)}
+.blue-focus input:focus,.blue-focus select:focus,.blue-focus textarea:focus{border-color:#1e4d8b;box-shadow:0 0 0 3px rgba(30,77,139,0.1)}
+.field textarea{resize:vertical;min-height:60px}
+.ref-block{background:#f9f9f9;border:1px solid #e0e0e0;border-radius:10px;padding:14px;margin-bottom:12px}
+.ref-title{font-size:13px;font-weight:700;color:#8B1A1A;margin-bottom:10px}
+.blue-mode .ref-title{color:#1e4d8b}
+.radio-row{display:flex;gap:8px;align-items:center;margin-top:6px}
+.radio-label{font-size:12px;color:#666;font-weight:600}
+.radio-btn{padding:6px 14px;border:1px solid #d0d0d0;background:#fff;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.radio-btn.active{background:#8B1A1A;color:#fff;border-color:#8B1A1A}
+.blue-mode .radio-btn.active{background:#1e4d8b;border-color:#1e4d8b}
+
+.bloc-container{background:#fff;border:2px solid #e0e0e0;border-radius:14px;padding:14px;margin-bottom:14px}
+.bloc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #f0f0f0}
+.bloc-title{font-size:15px;font-weight:700;color:#8B1A1A;display:flex;align-items:center;gap:8px}
+.blue-mode .bloc-title{color:#1e4d8b}
+.bloc-actions{display:flex;gap:6px}
+.bloc-btn{padding:6px 10px;border:1px solid #d0d0d0;background:#fff;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer}
+.bloc-btn.delete{color:#c0392b;border-color:#fadbd8}
+.bloc-prescription{background:#fafafa;border-radius:8px;padding:10px;margin-bottom:12px}
+.bloc-prescription-title{font-size:11px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.add-rep-btn,.add-bloc-btn{width:100%;padding:12px;border:2px dashed #8B1A1A;background:rgba(139,26,26,0.05);color:#8B1A1A;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px;transition:all 0.2s}
+.add-rep-btn:active,.add-bloc-btn:active{background:rgba(139,26,26,0.15)}
+.blue-mode .add-rep-btn,.blue-mode .add-bloc-btn{border-color:#1e4d8b;background:rgba(30,77,139,0.05);color:#1e4d8b}
+.blue-mode .add-rep-btn:active,.blue-mode .add-bloc-btn:active{background:rgba(30,77,139,0.15)}
+
+.rep-card{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:12px;margin-bottom:8px;transition:all 0.2s}
+.rep-card.alert{border-color:#ff6b35;background:#fff5f0}
+.rep-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.rep-number{font-size:13px;font-weight:700;color:#8B1A1A}
+.blue-mode .rep-number{color:#1e4d8b}
+.rep-actions{display:flex;gap:6px;align-items:center}
+.rep-badge{font-size:10px;padding:3px 8px;border-radius:10px;font-weight:700}
+.badge-stable{background:#4CAF50;color:#fff}
+.badge-warning{background:#ff9800;color:#fff}
+.badge-stop{background:#f44336;color:#fff}
+.rep-delete{background:none;border:none;color:#c0392b;cursor:pointer;font-size:16px;padding:0 4px}
+.rep-main-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+.rpe-picker{display:flex;gap:3px;flex-wrap:wrap;margin-top:4px}
+.rpe-btn{flex:1;min-width:24px;padding:6px 2px;border:1px solid #d0d0d0;background:#fff;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s}
+.rpe-btn.active{background:#8B1A1A;color:#fff;border-color:#8B1A1A;transform:scale(1.05)}
+.blue-mode .rpe-btn.active{background:#1e4d8b;border-color:#1e4d8b}
+.rpe-label{font-size:10px;color:#888;text-align:center;margin-top:3px;min-height:11px}
+.details-toggle{background:#f5f5f7;border:1px solid #e0e0e0;border-radius:8px;padding:8px 12px;font-size:12px;color:#555;cursor:pointer;width:100%;text-align:left;font-weight:600;margin-top:8px;display:flex;justify-content:space-between;align-items:center}
+.details-toggle:active{background:#e8e8ea}
+.details-panel{display:none;padding:10px 0 0;border-top:1px solid #f0f0f0;margin-top:8px}
+.details-panel.open{display:block}
+.field-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+.star-row{display:flex;gap:4px;justify-content:center;margin-top:8px}
+.star{font-size:28px;color:#ddd;cursor:pointer;transition:all 0.15s}
+.star.filled{color:#ffc107}
+.pap-box{background:#fff8e1;border:1px solid #ffc107;border-radius:10px;padding:12px;margin-bottom:12px}
+.pap-result{font-size:12px;font-weight:600;margin-top:8px;padding:8px;border-radius:6px;text-align:center}
+.pap-green{background:#c8e6c9;color:#2e7d32}
+.pap-orange{background:#ffe0b2;color:#e65100}
+.pap-red{background:#ffcdd2;color:#c62828}
+.section-divider{height:1px;background:#e0e0e0;margin:24px 0}
+.stop-signal{background:#f44336;color:#fff;padding:12px;border-radius:10px;text-align:center;font-weight:700;margin:12px 0;display:none;animation:pulse 1s infinite}
+.stop-signal.visible{display:block}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.85}}
+.info-box{background:#e3f2fd;border-left:4px solid #1e4d8b;padding:10px 14px;border-radius:4px;font-size:12px;color:#1565c0;margin-bottom:12px}
+.info-box.red{background:#ffebee;border-color:#c62828;color:#b71c1c}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 20px;border-radius:24px;font-size:13px;opacity:0;pointer-events:none;transition:opacity 0.3s;z-index:200;max-width:90%;text-align:center}
+.toast.show{opacity:1}
+.no-team{text-align:center;padding:40px 20px;color:#888}
+.no-team-icon{font-size:48px;margin-bottom:16px;opacity:0.3}
+@media(max-width:480px){
+  .content{padding:16px 12px}
+  .grid,.rep-main-row{grid-template-columns:1fr}
+  .field-grid-3{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="logo">DD VITESSE</div>
+        <div class="logo-sub">FFDDJR · Multi-équipes</div>
+      </div>
+      <div style="font-size:11px;opacity:0.7;text-align:right">
+        <div id="currentDate"></div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab active red" id="tab15s" onclick="switchMode('15s')">REPS 15s</button>
+      <button class="tab" id="tab68s" onclick="switchMode('68s')">SPEED MAX</button>
+    </div>
+    <div class="toolbar">
+      <button class="tool-btn primary" onclick="saveNow()">💾 Sauvegarder</button>
+      <button class="tool-btn" onclick="loadSaved()">📂 Charger</button>
+      <button class="tool-btn" onclick="exportAll()">📤 Exporter</button>
+      <button class="tool-btn danger" onclick="newSession()">🔄 Nouvelle</button>
+    </div>
+  </div>
+
+  <div class="content" id="content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY='ddvitesse_multiteam_v2';
+
+const RPE_LABELS={
+  0:'Aucun',1:'Très très léger',2:'Très léger',3:'Léger',4:'Modéré',
+  5:'Fort',6:'Entre fort et très fort',7:'Très fort',8:'Entre 7 et 9',
+  9:'Extrêmement fort',10:'Maximal absolu'
+};
+
+const HPLUS_OPTIONS=['','Léger','Modéré','Élevé','Très élevé'];
+
+function newRep(){return{resultat:'',rpe:null,tronc:'',arrets:'',hPercu:'',note:'',_open:false}}
+
+function newBloc(modeBlue=false){
+  return {
+    id:Date.now()+Math.random()+'_'+Math.floor(Math.random()*1e6),
+    nom:'',
+    prescription:{intensite:modeBlue?'100%':'',cible:'',repos:modeBlue?'4 min':'3-4 min',focus:''},
+    reps:[newRep(),newRep(),newRep(),newRep()]
+  };
+}
+
+function newTeam(){
+  return {
+    id:Date.now()+Math.random(),
+    nom:'',
+    athletes:'',
+    ref15s:{actuelle:'',precedente:'',reeval:'non'},
+    ref30s:{actuelle:'',precedente:'',reeval:'non'},
+    ref1mn:{actuelle:'',precedente:'',reeval:'non'},
+    ref68s:{actuelle:'',precedente:'',reeval:'non'},
+    blocs15s:[newBloc(false)],
+    blocs68s:[newBloc(true)],
+    bilan15s:{qualite:0,decision:'',notes:''},
+    bilan68s:{qualite:0,decision:'',notes:''}
+  };
+}
+
+let state={
+  mode:'15s',
+  date:new Date().toISOString().slice(0,10),
+  semaine:'',
+  phase:'',
+  activeTeamId:null,
+  teams:[]
+};
+
+window.addEventListener('DOMContentLoaded',()=>{
+  displayDate();
+  tryLoadOnStart();
+  render();
+  setInterval(()=>saveNow(true),30000);
+});
+
+function displayDate(){
+  const d=new Date();
+  document.getElementById('currentDate').textContent=d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+}
+
+function switchMode(mode){
+  state.mode=mode;
+  document.getElementById('tab15s').classList.toggle('active',mode==='15s');
+  document.getElementById('tab15s').classList.toggle('red',mode==='15s');
+  document.getElementById('tab68s').classList.toggle('active',mode==='68s');
+  document.getElementById('tab68s').classList.toggle('blue',mode==='68s');
+  render();
+}
+
+function escapeHtml(s){
+  if(s===null||s===undefined)return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function getActiveTeam(){
+  return state.teams.find(t=>t.id===state.activeTeamId);
+}
+
+function addTeam(){
+  if(state.teams.length>=10){showToast('Maximum 10 équipes');return}
+  const team=newTeam();
+  team.nom='Équipe '+(state.teams.length+1);
+  state.teams.push(team);
+  state.activeTeamId=team.id;
+  saveNow(true);
+  render();
+  showToast('✓ Équipe ajoutée');
+}
+
+function deleteTeam(){
+  const t=getActiveTeam();if(!t)return;
+  if(!confirm(`Supprimer "${t.nom}" ? Cette action est irréversible.`))return;
+  state.teams=state.teams.filter(tt=>tt.id!==state.activeTeamId);
+  state.activeTeamId=state.teams.length>0?state.teams[0].id:null;
+  saveNow(true);
+  render();
+  showToast('Équipe supprimée');
+}
+
+function selectTeam(id){
+  state.activeTeamId=id?parseFloat(id):null;
+  render();
+}
+
+function renameTeam(){
+  const t=getActiveTeam();if(!t)return;
+  const nv=prompt('Nouveau nom de l\'équipe :',t.nom);
+  if(nv!==null){t.nom=nv;saveNow(true);render()}
+}
+
+function render(){
+  const container=document.getElementById('content');
+  const blueMode=state.mode==='68s';
+
+  // Common section
+  let html=`
+    <div class="section-title-bar ${blueMode?'blue':''}">INFOS GÉNÉRALES</div>
+    <div class="grid">
+      <div class="field ${blueMode?'blue-focus':''}">
+        <label class="field-label">Date</label>
+        <input type="date" id="common_date" value="${state.date}">
+      </div>
+      <div class="field ${blueMode?'blue-focus':''}">
+        <label class="field-label">Semaine</label>
+        <input type="text" id="common_semaine" value="${escapeHtml(state.semaine)}" placeholder="S1, S2…">
+      </div>
+    </div>
+    <div class="grid-1">
+      <div class="field ${blueMode?'blue-focus':''}">
+        <label class="field-label">Phase</label>
+        <input type="text" id="common_phase" value="${escapeHtml(state.phase)}" placeholder="Reprise / Développement / Surcharge / Récupération">
+      </div>
+    </div>
+
+    <div class="team-selector ${blueMode?'blue-mode':''}">
+      <div class="team-selector-label">
+        <span>ÉQUIPE ACTIVE</span>
+        <span class="team-count">${state.teams.length} équipe${state.teams.length>1?'s':''}</span>
+      </div>
+      <div class="team-row">
+        <select class="team-dropdown" id="teamDropdown" onchange="selectTeam(this.value)">
+          <option value="">— Sélectionner —</option>
+          ${state.teams.map(t=>`<option value="${t.id}" ${t.id===state.activeTeamId?'selected':''}>${escapeHtml(t.nom||'Équipe sans nom')}</option>`).join('')}
+        </select>
+        <button class="team-btn add" onclick="addTeam()">+ Équipe</button>
+      </div>
+    </div>
+  `;
+
+  if(state.teams.length===0){
+    html+=`
+      <div class="no-team">
+        <div class="no-team-icon">👥</div>
+        <p><strong>Aucune équipe</strong></p>
+        <p style="font-size:13px;margin-top:8px">Clique sur <strong>+ Équipe</strong> pour commencer</p>
+      </div>
+    `;
+    container.innerHTML=html;
+    attachCommonHandlers();
+    return;
+  }
+
+  if(!state.activeTeamId)state.activeTeamId=state.teams[0].id;
+  const t=getActiveTeam();
+  if(!t){container.innerHTML=html;return}
+
+  html+=blueMode?renderFiche68s(t):renderFiche15s(t);
+  container.innerHTML=html;
+  attachCommonHandlers();
+  attachTeamHandlers();
+  updateAllBadges();
+}
+
+function attachCommonHandlers(){
+  ['date','semaine','phase'].forEach(f=>{
+    const el=document.getElementById('common_'+f);
+    if(el)el.oninput=(e)=>{state[f]=e.target.value};
+  });
+}
+
+function renderFiche15s(t){
+  return `
+    <div class="fiche-header">
+      <h2>REPS 15 SECONDES</h2>
+      <p>Vitesse pure · Glycolyse · FFDDJR 2026</p>
+    </div>
+
+    <div class="grid">
+      <div class="field">
+        <label class="field-label">Nom équipe / club</label>
+        <input type="text" id="team_nom" value="${escapeHtml(t.nom)}" placeholder="Nom de l'équipe">
+      </div>
+      <div class="field">
+        <label class="field-label">Athlète(s)</label>
+        <input type="text" id="team_athletes" value="${escapeHtml(t.athletes)}" placeholder="Prénoms">
+      </div>
+    </div>
+
+    <div class="section-title-bar">1 — RÉFÉRENCE MAX</div>
+    ${renderRefBlock('15s','15 secondes (pas/15s)',t.ref15s)}
+    ${renderRefBlock('30s','30 secondes (pas/30s)',t.ref30s)}
+    ${renderRefBlock('1mn','1 minute (pas/1mn)',t.ref1mn)}
+
+    <div class="section-title-bar">2 — BLOCS DE TRAVAIL</div>
+    <div class="info-box">Chaque bloc a sa propre prescription. Jusqu'à 4 blocs et 10 reps par bloc.</div>
+    ${t.blocs15s.map((b,i)=>renderBloc(b,i,false)).join('')}
+    ${t.blocs15s.length<4?`<button class="add-bloc-btn" onclick="addBloc()">+ Ajouter un bloc</button>`:''}
+
+    <div class="section-title-bar">3 — ANALYSE PAP</div>
+    <div class="pap-box" id="papBox_15s"></div>
+
+    <div class="section-title-bar">4 — BILAN DE SÉANCE</div>
+    <div class="field">
+      <label class="field-label">Qualité globale</label>
+      <div class="star-row">
+        ${[1,2,3,4,5].map(n=>`<span class="star star-bilan15s ${n<=t.bilan15s.qualite?'filled':''}" onclick="setStars('bilan15s',${n})">★</span>`).join('')}
+      </div>
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label class="field-label">Décision séance suivante</label>
+      <textarea id="bilan15s_decision" placeholder="Prochaine séance : …">${escapeHtml(t.bilan15s.decision)}</textarea>
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label class="field-label">Notes coach</label>
+      <textarea id="bilan15s_notes" placeholder="Observations…">${escapeHtml(t.bilan15s.notes)}</textarea>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:20px">
+      <button class="team-btn" onclick="renameTeam()" style="flex:1">✏️ Renommer</button>
+      <button class="team-btn delete" onclick="deleteTeam()" style="flex:1">🗑 Supprimer</button>
+    </div>
+  `;
+}
+
+function renderFiche68s(t){
+  return `
+    <div class="fiche-header blue">
+      <h2>SPEED MAX 6-8 SECONDES</h2>
+      <p>Phosphagène pur · Plafond neurologique · FFDDJR 2026</p>
+    </div>
+
+    <div class="grid">
+      <div class="field blue-focus">
+        <label class="field-label">Nom équipe / club</label>
+        <input type="text" id="team_nom" value="${escapeHtml(t.nom)}" placeholder="Nom de l'équipe">
+      </div>
+      <div class="field blue-focus">
+        <label class="field-label">Athlète(s)</label>
+        <input type="text" id="team_athletes" value="${escapeHtml(t.athletes)}" placeholder="Prénoms">
+      </div>
+    </div>
+
+    <div class="section-title-bar blue">1 — RÉFÉRENCES MAX</div>
+    ${renderRefBlock('15s','15 secondes (pas/15s)',t.ref15s,true)}
+    ${renderRefBlock('30s','30 secondes (pas/30s)',t.ref30s,true)}
+    ${renderRefBlock('1mn','1 minute (pas/1mn)',t.ref1mn,true)}
+    ${renderRefBlock('68s','6-8 secondes (pas/6-8s)',t.ref68s,true)}
+
+    <div class="section-title-bar blue">2 — BLOCS SPEED MAX</div>
+    <div class="info-box red"><strong>⚠ Règles absolues :</strong> 4 min de repos minimum · Arrêt dès chute &gt; 2 pas · Jamais J-1 d'une séance 15s.</div>
+    <div class="stop-signal" id="stopSignal_68s">⛔ SIGNAL D'ARRÊT — Le plafond neurologique est atteint, terminer la séance ici.</div>
+    ${t.blocs68s.map((b,i)=>renderBloc(b,i,true)).join('')}
+    ${t.blocs68s.length<4?`<button class="add-bloc-btn" onclick="addBloc()">+ Ajouter un bloc</button>`:''}
+
+    <div class="section-title-bar blue">3 — ANALYSE PAP</div>
+    <div class="pap-box" id="papBox_68s"></div>
+
+    <div class="section-title-bar blue">4 — BILAN DE SÉANCE</div>
+    <div class="field blue-focus">
+      <label class="field-label">Qualité globale</label>
+      <div class="star-row">
+        ${[1,2,3,4,5].map(n=>`<span class="star star-bilan68s ${n<=t.bilan68s.qualite?'filled':''}" onclick="setStars('bilan68s',${n})">★</span>`).join('')}
+      </div>
+    </div>
+    <div class="field blue-focus" style="margin-top:12px">
+      <label class="field-label">Décision séance suivante</label>
+      <textarea id="bilan68s_decision" placeholder="Prochaine séance : …">${escapeHtml(t.bilan68s.decision)}</textarea>
+    </div>
+    <div class="field blue-focus" style="margin-top:12px">
+      <label class="field-label">Notes coach</label>
+      <textarea id="bilan68s_notes" placeholder="Observations…">${escapeHtml(t.bilan68s.notes)}</textarea>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:20px">
+      <button class="team-btn blue" onclick="renameTeam()" style="flex:1">✏️ Renommer</button>
+      <button class="team-btn delete" onclick="deleteTeam()" style="flex:1">🗑 Supprimer</button>
+    </div>
+  `;
+}
+
+function renderRefBlock(key,label,ref,blueMode=false){
+  const mode=blueMode?'blue-mode':'';
+  const fcls=blueMode?'blue-focus':'';
+  return `
+    <div class="ref-block ${mode}">
+      <div class="ref-title">${label}</div>
+      <div class="grid">
+        <div class="field ${fcls}">
+          <label class="field-label">Actuelle</label>
+          <input type="number" id="ref${key}_actuelle" value="${ref.actuelle}" placeholder="pas">
+        </div>
+        <div class="field ${fcls}">
+          <label class="field-label">Précédente</label>
+          <input type="number" id="ref${key}_precedente" value="${ref.precedente}" placeholder="pas">
+        </div>
+      </div>
+      <div class="radio-row">
+        <span class="radio-label">Réévaluation :</span>
+        <button class="radio-btn ${ref.reeval==='oui'?'active':''}" id="radio_ref${key}_reeval_oui" onclick="setRadio('ref${key}.reeval','oui')">OUI</button>
+        <button class="radio-btn ${ref.reeval==='non'?'active':''}" id="radio_ref${key}_reeval_non" onclick="setRadio('ref${key}.reeval','non')">NON</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderBloc(b,idx,blueMode){
+  const mode=blueMode?'blue-mode':'';
+  const fcls=blueMode?'blue-focus':'';
+  const t=getActiveTeam();
+  const blocsKey=blueMode?'blocs68s':'blocs15s';
+  return `
+    <div class="bloc-container ${mode}">
+      <div class="bloc-header">
+        <div class="bloc-title">📦 BLOC ${idx+1}</div>
+        <div class="bloc-actions">
+          ${t[blocsKey].length>1?`<button class="bloc-btn delete" onclick="deleteBloc(${idx})">🗑 Supprimer</button>`:''}
+        </div>
+      </div>
+
+      <div class="bloc-prescription">
+        <div class="bloc-prescription-title">Prescription du bloc</div>
+        <div class="grid">
+          <div class="field ${fcls}">
+            <label class="field-label">Intensité</label>
+            <input type="text" id="bloc_${idx}_intensite" value="${escapeHtml(b.prescription.intensite)}" placeholder="${blueMode?'100%':'90-95%'}">
+          </div>
+          <div class="field ${fcls}">
+            <label class="field-label">Cible (pas)</label>
+            <input type="number" id="bloc_${idx}_cible" value="${b.prescription.cible}" placeholder="pas">
+          </div>
+        </div>
+        <div class="grid" style="margin-top:8px">
+          <div class="field ${fcls}">
+            <label class="field-label">Repos entre reps</label>
+            <input type="text" id="bloc_${idx}_repos" value="${escapeHtml(b.prescription.repos)}" placeholder="${blueMode?'4 min':'3-4 min'}">
+          </div>
+          <div class="field ${fcls}">
+            <label class="field-label">Nom du bloc (opt.)</label>
+            <input type="text" id="bloc_${idx}_nom" value="${escapeHtml(b.nom)}" placeholder="Échauffement, Principal…">
+          </div>
+        </div>
+        <div class="field ${fcls}" style="margin-top:8px">
+          <label class="field-label">Focus technique</label>
+          <input type="text" id="bloc_${idx}_focus" value="${escapeHtml(b.prescription.focus)}" placeholder="Tronc, avant-pied…">
+        </div>
+      </div>
+
+      ${b.reps.map((r,ri)=>renderRep(r,idx,ri,blueMode)).join('')}
+
+      ${b.reps.length<10?`<button class="add-rep-btn" onclick="addRep(${idx})">+ Ajouter une rep (${b.reps.length}/10)</button>`:`<div class="info-box" style="text-align:center;margin-top:8px"><strong>Plafond 10 reps atteint pour ce bloc</strong></div>`}
+    </div>
+  `;
+}
+
+function renderRep(r,blocIdx,repIdx,blueMode){
+  const fcls=blueMode?'blue-focus':'';
+  const cardId=`repCard_${blocIdx}_${repIdx}`;
+  const detailsId=`details_${blocIdx}_${repIdx}`;
+  const isOpen=r._open;
+  return `
+    <div class="rep-card" id="${cardId}">
+      <div class="rep-header">
+        <div class="rep-number">REP ${repIdx+1}</div>
+        <div class="rep-actions">
+          <span class="rep-badge" id="repBadge_${blocIdx}_${repIdx}">—</span>
+          <button class="rep-delete" onclick="deleteRep(${blocIdx},${repIdx})" title="Supprimer">×</button>
+        </div>
+      </div>
+
+      <div class="rep-main-row">
+        <div class="field ${fcls}">
+          <label class="field-label">Résultat (pas)</label>
+          <input type="number" id="rep_${blocIdx}_${repIdx}_resultat" value="${r.resultat}" placeholder="pas" inputmode="numeric">
+        </div>
+        <div class="field ${fcls}">
+          <label class="field-label">RPE /10</label>
+          <div class="rpe-picker">
+            ${Array.from({length:11},(_,n)=>`<button class="rpe-btn ${r.rpe===n?'active':''}" id="rpe_${blocIdx}_${repIdx}_${n}" onclick="setRPE(${blocIdx},${repIdx},${n})">${n}</button>`).join('')}
+          </div>
+          <div class="rpe-label" id="rpeLabel_${blocIdx}_${repIdx}">${r.rpe!==null?'RPE '+r.rpe+' — '+RPE_LABELS[r.rpe]:''}</div>
+        </div>
+      </div>
+
+      <button class="details-toggle" onclick="toggleDetails(${blocIdx},${repIdx})">
+        <span>📝 Détails ${(r.tronc||r.arrets||r.hPercu||r.note)?'<span style="color:#4CAF50">●</span>':''}</span>
+        <span id="detailsArrow_${blocIdx}_${repIdx}">${isOpen?'▲':'▼'}</span>
+      </button>
+      <div class="details-panel ${isOpen?'open':''}" id="${detailsId}">
+        <div class="field-grid-3">
+          <div class="field ${fcls}">
+            <label class="field-label">Angle tronc</label>
+            <input type="text" id="rep_${blocIdx}_${repIdx}_tronc" value="${escapeHtml(r.tronc)}" placeholder="<100° ✓">
+          </div>
+          <div class="field ${fcls}">
+            <label class="field-label">Arrêts</label>
+            <input type="number" id="rep_${blocIdx}_${repIdx}_arrets" value="${r.arrets}" placeholder="0" min="0" inputmode="numeric">
+          </div>
+          <div class="field ${fcls}">
+            <label class="field-label">H⁺ perçu</label>
+            <select id="rep_${blocIdx}_${repIdx}_hPercu">
+              ${HPLUS_OPTIONS.map(opt=>`<option value="${opt}" ${r.hPercu===opt?'selected':''}>${opt||'—'}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="field ${fcls}" style="margin-top:8px">
+          <label class="field-label">Note coach</label>
+          <input type="text" id="rep_${blocIdx}_${repIdx}_note" value="${escapeHtml(r.note)}" placeholder="Observation rep ${repIdx+1}">
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function attachTeamHandlers(){
+  const t=getActiveTeam();if(!t)return;
+
+  const nomEl=document.getElementById('team_nom');
+  if(nomEl)nomEl.oninput=(e)=>{
+    t.nom=e.target.value;
+    const opt=document.getElementById('teamDropdown').querySelector(`option[value="${t.id}"]`);
+    if(opt)opt.textContent=e.target.value||'Équipe sans nom';
+  };
+  const athEl=document.getElementById('team_athletes');
+  if(athEl)athEl.oninput=(e)=>{t.athletes=e.target.value};
+
+  ['15s','30s','1mn','68s'].forEach(k=>{
+    const refKey='ref'+k;
+    if(!t[refKey])return;
+    const aEl=document.getElementById(`${refKey}_actuelle`);
+    const pEl=document.getElementById(`${refKey}_precedente`);
+    if(aEl)aEl.oninput=(e)=>{t[refKey].actuelle=e.target.value;updateAllBadges()};
+    if(pEl)pEl.oninput=(e)=>{t[refKey].precedente=e.target.value};
+  });
+
+  const blocsKey=state.mode==='15s'?'blocs15s':'blocs68s';
+  t[blocsKey].forEach((b,bi)=>{
+    ['intensite','cible','repos','focus'].forEach(f=>{
+      const el=document.getElementById(`bloc_${bi}_${f}`);
+      if(el)el.oninput=(e)=>{b.prescription[f]=e.target.value};
+    });
+    const nomEl=document.getElementById(`bloc_${bi}_nom`);
+    if(nomEl)nomEl.oninput=(e)=>{b.nom=e.target.value};
+
+    b.reps.forEach((r,ri)=>{
+      const resEl=document.getElementById(`rep_${bi}_${ri}_resultat`);
+      if(resEl)resEl.oninput=(e)=>{r.resultat=e.target.value;updateAllBadges()};
+      ['tronc','arrets','note'].forEach(f=>{
+        const el=document.getElementById(`rep_${bi}_${ri}_${f}`);
+        if(el)el.oninput=(e)=>{r[f]=e.target.value};
+      });
+      const hEl=document.getElementById(`rep_${bi}_${ri}_hPercu`);
+      if(hEl)hEl.onchange=(e)=>{r.hPercu=e.target.value};
+    });
+  });
+
+  const bKey='bilan'+state.mode;
+  const dEl=document.getElementById(`${bKey}_decision`);
+  if(dEl)dEl.oninput=(e)=>{t[bKey].decision=e.target.value};
+  const nEl=document.getElementById(`${bKey}_notes`);
+  if(nEl)nEl.oninput=(e)=>{t[bKey].notes=e.target.value};
+}
+
+function setRPE(bi,ri,val){
+  const t=getActiveTeam();if(!t)return;
+  const blocsKey=state.mode==='15s'?'blocs15s':'blocs68s';
+  t[blocsKey][bi].reps[ri].rpe=val;
+  document.getElementById(`rpeLabel_${bi}_${ri}`).textContent=`RPE ${val} — ${RPE_LABELS[val]}`;
+  for(let i=0;i<=10;i++){
+    const btn=document.getElementById(`rpe_${bi}_${ri}_${i}`);
+    if(btn)btn.classList.toggle('active',i===val);
+  }
+}
+
+function setRadio(field,value){
+  const t=getActiveTeam();if(!t)return;
+  const parts=field.split('.');
+  if(parts.length===2){t[parts[0]][parts[1]]=value}
+  const btnPrefix=`radio_${parts.join('_')}`;
+  document.querySelectorAll(`[id^="${btnPrefix}_"]`).forEach(b=>b.classList.remove('active'));
+  document.getElementById(`${btnPrefix}_${value}`).classList.add('active');
+}
+
+function setStars(bilanKey,val){
+  const t=getActiveTeam();if(!t)return;
+  t[bilanKey].qualite=val;
+  document.querySelectorAll(`.star-${bilanKey}`).forEach((s,i)=>s.classList.toggle('filled',i<val));
+}
+
+function toggleDetails(bi,ri){
+  const t=getActiveTeam();if(!t)return;
+  const blocsKey=state.mode==='15s'?'blocs15s':'blocs68s';
+  t[blocsKey][bi].reps[ri]._open=!t[blocsKey][bi].reps[ri]._open;
+  const panel=document.getElementById(`details_${bi}_${ri}`);
+  const arrow=document.getElementById(`detailsArrow_${bi}_${ri}`);
+  panel.classList.toggle('open');
+  arrow.textContent=panel.classList.contains('open')?'▲':'▼';
+}
+
+function addRep(bi){
+  const t=getActiveTeam();if(!t)return;
+  const blocsKey=state.mode==='15s'?'blocs15s':'blocs68s';
+  if(t[blocsKey][bi].reps.length>=10){showToast('Max 10 reps par bloc');return}
+  t[blocsKey][bi].reps.push(newRep());
+  saveNow(true);
+  render();
+}
+
+function deleteRep(bi,ri){
+  const t=getActiveTeam();if(!t)return;
+  const blocsKey=state.mode==='15s'?'blocs15s':'blocs68s';
+  if(t[blocsKey][bi].reps.length<=1){showToast('Au moins 1 rep requise');return}
+  if(!confirm(`Supprimer la rep ${ri+1} ?`))return;
+  t[blocsKey][bi].reps.splice(ri,1);
+  saveNow(true);
+  render();
+}
+
+function addBloc(){
+  const t=getActiveTeam();if(!t)return;
+  const blocsKey=state.mode==='15s'?'blocs15s':'blocs68s';
+  if(t[blocsKey].length>=4){showToast('Max 4 blocs');return}
+  t[blocsKey].push(newBloc(state.mode==='68s'));
+  saveNow(true);
+  render();
+}
+
+function deleteBloc(bi){
+  const t=getActiveTeam();if(!t)return;
+  const blocsKey=state.mode==='15s'?'blocs15s':'blocs68s';
+  if(t[blocsKey].length<=1){showToast('Au moins 1 bloc requis');return}
+  if(!confirm(`Supprimer le bloc ${bi+1} ?`))return;
+  t[blocsKey].splice(bi,1);
+  saveNow(true);
+  render();
+}
+
+function updateAllBadges(){
+  const t=getActiveTeam();if(!t)return;
+  const blocsKey=state.mode==='15s'?'blocs15s':'blocs68s';
+  const blocs=t[blocsKey];
+  let stopTriggered=false;
+
+  blocs.forEach((b,bi)=>{
+    b.reps.forEach((r,ri)=>{
+      const card=document.getElementById(`repCard_${bi}_${ri}`);
+      const badge=document.getElementById(`repBadge_${bi}_${ri}`);
+      if(!card||!badge)return;
+      const val=parseFloat(r.resultat)||0;
+      if(!val){
+        badge.textContent='—';badge.className='rep-badge';card.classList.remove('alert');return;
+      }
+      if(state.mode==='68s'){
+        const ref=parseFloat(t.ref68s.actuelle)||parseFloat(t.ref15s.actuelle)||0;
+        if(ref>0 && (ref-val)>2){
+          badge.textContent='⛔ ARRÊT';badge.className='rep-badge badge-stop';
+          card.classList.add('alert');stopTriggered=true;
+        }else if(ref>0 && (ref-val)>0){
+          badge.textContent='⚠ -'+(ref-val).toFixed(1);badge.className='rep-badge badge-warning';
+          card.classList.add('alert');
+        }else{
+          badge.textContent='✓';badge.className='rep-badge badge-stable';
+          card.classList.remove('alert');
+        }
+      }else{
+        if(ri===0 && bi===0){
+          badge.textContent='Base';badge.className='rep-badge badge-stable';
+          card.classList.remove('alert');
+        }else{
+          let prev=0;
+          if(ri>0){prev=parseFloat(b.reps[ri-1].resultat)||0}
+          else if(bi>0){
+            const prevBloc=blocs[bi-1];
+            prev=parseFloat(prevBloc.reps[prevBloc.reps.length-1].resultat)||0;
+          }
+          if(prev>0 && (prev-val)>2){
+            badge.textContent='⚠ Chute';badge.className='rep-badge badge-warning';
+            card.classList.add('alert');
+          }else if(prev>0 && val>=prev){
+            badge.textContent='↑ PAP';badge.className='rep-badge badge-stable';
+            card.classList.remove('alert');
+          }else{
+            badge.textContent='Stable';badge.className='rep-badge badge-stable';
+            card.classList.remove('alert');
+          }
+        }
+      }
+    });
+  });
+
+  const stopEl=document.getElementById('stopSignal_'+state.mode);
+  if(stopEl)stopEl.classList.toggle('visible',stopTriggered);
+  renderPAP();
+}
+
+function renderPAP(){
+  const t=getActiveTeam();if(!t)return;
+  const blocsKey=state.mode==='15s'?'blocs15s':'blocs68s';
+  const blocs=t[blocsKey];
+  const papBox=document.getElementById('papBox_'+state.mode);
+  if(!papBox)return;
+
+  const allVals=[];
+  blocs.forEach(b=>b.reps.forEach(r=>{
+    const v=parseFloat(r.resultat)||0;
+    if(v>0)allVals.push(v);
+  }));
+
+  if(allVals.length<2){
+    papBox.innerHTML='<strong>📊 Analyse PAP</strong><p style="font-size:12px;color:#888;margin-top:6px">Remplir au moins 2 reps pour analyser</p>';
+    return;
+  }
+
+  const baseline=allVals[0];
+  const peak=Math.max(...allVals);
+  const peakIdx=allVals.indexOf(peak);
+  const ecart=peak-baseline;
+  let verdict='',cls='';
+  if(state.mode==='15s'){
+    if(ecart>=3 && peakIdx>=2){verdict='PAP normal — montée en puissance neuromusculaire';cls='pap-green'}
+    else if(ecart>=5){verdict='Pic élevé — référence max probablement à réévaluer ↑';cls='pap-orange'}
+    else if(peak<baseline){verdict='Dégradation — fatigue précoce, repos à augmenter';cls='pap-red'}
+    else{verdict='Profil plat — stimulus cohérent';cls='pap-green'}
+  }else{
+    const chutes=allVals.filter(v=>(baseline-v)>2).length;
+    if(chutes>0){verdict='Chute détectée — arrêt recommandé';cls='pap-red'}
+    else if(peak>baseline){verdict='Plafond neurologique atteint — excellent';cls='pap-green'}
+    else{verdict='Performance stable — protocole correct';cls='pap-green'}
+  }
+  papBox.innerHTML=`
+    <strong>📊 Analyse PAP — sur ${allVals.length} reps (tous blocs confondus)</strong>
+    <p style="font-size:12px;margin-top:6px">Baseline : <strong>${baseline}</strong> · Pic : <strong>${peak}</strong> (rep ${peakIdx+1}) · Écart : <strong>${ecart>=0?'+':''}${ecart}</strong></p>
+    <div class="pap-result ${cls}">${verdict}</div>
+  `;
+}
+
+function saveNow(silent=false){
+  try{
+    const data={...state,savedAt:new Date().toISOString()};
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+    if(!silent)showToast('✓ Séance sauvegardée');
+  }catch(e){
+    if(!silent)showToast('Erreur sauvegarde');
+  }
+}
+
+function tryLoadOnStart(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw)return;
+    const data=JSON.parse(raw);
+    const savedAt=new Date(data.savedAt);
+    const hours=(new Date()-savedAt)/(1000*60*60);
+    if(hours<24){
+      if(confirm(`Une séance a été sauvegardée il y a ${Math.round(hours*10)/10}h. La charger ?`)){
+        Object.assign(state,data);
+        delete state.savedAt;
+        // Migration
+        if(state.teams)state.teams.forEach(t=>{
+          if(!t.blocs15s)t.blocs15s=[newBloc(false)];
+          if(!t.blocs68s)t.blocs68s=[newBloc(true)];
+        });
+      }
+    }
+  }catch(e){}
+}
+
+function loadSaved(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw){showToast('Aucune sauvegarde trouvée');return}
+    const data=JSON.parse(raw);
+    Object.assign(state,data);
+    delete state.savedAt;
+    if(state.teams)state.teams.forEach(t=>{
+      if(!t.blocs15s)t.blocs15s=[newBloc(false)];
+      if(!t.blocs68s)t.blocs68s=[newBloc(true)];
+    });
+    render();
+    showToast('✓ Séance chargée');
+  }catch(e){showToast('Erreur chargement')}
+}
+
+function newSession(){
+  if(!confirm('Créer une nouvelle séance ? Les données actuelles seront perdues si non sauvegardées.'))return;
+  state={
+    mode:state.mode,
+    date:new Date().toISOString().slice(0,10),
+    semaine:'',phase:'',
+    activeTeamId:null,teams:[]
+  };
+  localStorage.removeItem(STORAGE_KEY);
+  render();
+  showToast('Nouvelle séance');
+}
+
+function exportAll(){
+  let txt=`DD VITESSE — SUIVI DE SÉANCE MULTI-ÉQUIPES\n${'='.repeat(50)}\n\n`;
+  txt+=`Date : ${state.date}\nSemaine : ${state.semaine}\nPhase : ${state.phase}\n`;
+  txt+=`Mode : ${state.mode==='15s'?'REPS 15s':'SPEED MAX 6-8s'}\nÉquipes : ${state.teams.length}\n\n`;
+
+  state.teams.forEach((t,idx)=>{
+    txt+=`${'═'.repeat(50)}\nÉQUIPE ${idx+1} : ${t.nom}\n${'═'.repeat(50)}\n`;
+    txt+=`Athlètes : ${t.athletes}\n\n`;
+    txt+=`RÉFÉRENCES MAX :\n`;
+    txt+=`  15s : ${t.ref15s.actuelle} (préc. ${t.ref15s.precedente})${t.ref15s.reeval==='oui'?' [réévalué]':''}\n`;
+    txt+=`  30s : ${t.ref30s.actuelle} (préc. ${t.ref30s.precedente})${t.ref30s.reeval==='oui'?' [réévalué]':''}\n`;
+    txt+=`  1mn : ${t.ref1mn.actuelle} (préc. ${t.ref1mn.precedente})${t.ref1mn.reeval==='oui'?' [réévalué]':''}\n`;
+    if(state.mode==='68s')txt+=`  6-8s : ${t.ref68s.actuelle} (préc. ${t.ref68s.precedente})${t.ref68s.reeval==='oui'?' [réévalué]':''}\n`;
+    txt+=`\n`;
+
+    const blocsKey=state.mode==='15s'?'blocs15s':'blocs68s';
+    t[blocsKey].forEach((b,bi)=>{
+      txt+=`${'─'.repeat(50)}\nBLOC ${bi+1}${b.nom?' — '+b.nom:''}\n${'─'.repeat(50)}\n`;
+      txt+=`Prescription : Intensité ${b.prescription.intensite} · Cible ${b.prescription.cible} pas · Repos ${b.prescription.repos}\n`;
+      txt+=`Focus : ${b.prescription.focus}\n\n`;
+      txt+=`Résultats :\n`;
+      b.reps.forEach((r,ri)=>{
+        if(r.resultat||r.rpe!==null){
+          txt+=`  Rep ${ri+1} : ${r.resultat||'—'} pas | RPE ${r.rpe??'—'}`;
+          if(r.tronc)txt+=` | Tronc ${r.tronc}`;
+          if(r.arrets)txt+=` | Arrêts ${r.arrets}`;
+          if(r.hPercu)txt+=` | H⁺ ${r.hPercu}`;
+          txt+=`\n`;
+          if(r.note)txt+=`    Note : ${r.note}\n`;
+        }
+      });
+      txt+=`\n`;
+    });
+
+    const bilanKey='bilan'+state.mode;
+    txt+=`BILAN : ${'★'.repeat(t[bilanKey].qualite)}${'☆'.repeat(5-t[bilanKey].qualite)}\n`;
+    if(t[bilanKey].decision)txt+=`Décision : ${t[bilanKey].decision}\n`;
+    if(t[bilanKey].notes)txt+=`Notes : ${t[bilanKey].notes}\n`;
+    txt+=`\n`;
+  });
+
+  txt+=`${'='.repeat(50)}\nGénéré le ${new Date().toLocaleString('fr-FR')}\nDD Vitesse — FFDDJR 2026\n`;
+
+  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`DDVitesse_${state.date}_${state.mode}_${state.teams.length}equipes.txt`;a.click();
+  URL.revokeObjectURL(url);
+  showToast('✓ Export téléchargé');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>
